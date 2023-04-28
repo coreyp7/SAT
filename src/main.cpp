@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <stdio.h>
+#include <vector>
 
 int setupSDL();
 void cleanup();
@@ -19,6 +20,8 @@ typedef struct {
     SDL_Point left = {pos.x - 25, pos.y};
 } Triangle;
 
+enum Direction { UP, DOWN, LEFT, RIGHT };
+
 void drawTriangle(Triangle tri){
     SDL_RenderDrawPoint(renderer, tri.pos.x, tri.pos.y);
     SDL_RenderDrawPoint(renderer, tri.top.x, tri.top.y);
@@ -35,9 +38,34 @@ void drawTriangle(Triangle tri){
     SDL_RenderDrawLines(renderer, points, 4);
 }
 
+void moveTriangle(Triangle* tri, Direction dir){
+    switch(dir){
+        case(UP):
+            tri->top.y--;
+            tri->left.y--;
+            tri->right.y--;
+            break;
+        case(DOWN):
+            tri->top.y++;
+            tri->left.y++;
+            tri->right.y++;
+            break;
+        case(LEFT):
+            tri->top.x--;
+            tri->left.x--;
+            tri->right.x--;
+            break;
+        case(RIGHT):
+            tri->top.x++;
+            tri->left.x++;
+            tri->right.x++;
+    } 
+}
+
 void gameLoop(){
     bool quit = false;
     SDL_Event event;
+    std::vector<SDL_Keycode> keysPressed;
 
     Uint32 frameStart;
     Uint32 frameFinish;
@@ -48,11 +76,31 @@ void gameLoop(){
 
     while(!quit){
         frameStart = SDL_GetTicks();
+
+        
+
         while(SDL_PollEvent(&event) != 0){
             switch(event.type){
                 case SDL_QUIT:
                     quit = true;
                     break;
+                case SDL_KEYDOWN:
+                    // keysPressed.push_back(event.key.keysym.sym);
+                    // break;
+                    switch(event.key.keysym.sym){
+                        case SDLK_w:
+                            moveTriangle(&tri, UP);
+                            break;
+                        case SDLK_a:
+                            moveTriangle(&tri, LEFT);
+                            break;
+                        case SDLK_s:
+                            moveTriangle(&tri, DOWN);
+                            break;
+                        case SDLK_d:
+                            moveTriangle(&tri, RIGHT);
+                            break;
+                    }
             }
         }
 
