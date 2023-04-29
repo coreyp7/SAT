@@ -26,7 +26,7 @@ LIBRARY_PATHS = -LC:\MinGW\lib
 LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2
 
 #OBJ_NAME specifies the name of our exectuable
-OBJ_NAME = sat.exe
+OBJ_NAME = exe/sat.exe
 
 #This is the target that compiles our executable
 all : $(OBJS)

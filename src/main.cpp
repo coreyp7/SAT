@@ -18,6 +18,9 @@ typedef struct {
     SDL_Point top = {pos.x, pos.y - 50};
     SDL_Point right = {pos.x + 25, pos.y};
     SDL_Point left = {pos.x - 25, pos.y};
+
+    int xvel = 0;
+    int yvel = 0;
 } Triangle;
 
 enum Direction { UP, DOWN, LEFT, RIGHT };
@@ -38,28 +41,19 @@ void drawTriangle(Triangle tri){
     SDL_RenderDrawLines(renderer, points, 4);
 }
 
-void moveTriangle(Triangle* tri, Direction dir){
-    switch(dir){
-        case(UP):
-            tri->top.y--;
-            tri->left.y--;
-            tri->right.y--;
-            break;
-        case(DOWN):
-            tri->top.y++;
-            tri->left.y++;
-            tri->right.y++;
-            break;
-        case(LEFT):
-            tri->top.x--;
-            tri->left.x--;
-            tri->right.x--;
-            break;
-        case(RIGHT):
-            tri->top.x++;
-            tri->left.x++;
-            tri->right.x++;
-    } 
+void moveTriangle(Triangle* tri){
+    int x = tri->xvel;
+    int y = tri->yvel;
+
+    tri->pos.x += x;
+    tri->pos.y += y;
+
+    tri->top.x += x;
+    tri->top.y += y;
+    tri->left.x += x;
+    tri->left.y += y;
+    tri->right.x += x;
+    tri->right.y += y;
 }
 
 void gameLoop(){
@@ -77,8 +71,6 @@ void gameLoop(){
     while(!quit){
         frameStart = SDL_GetTicks();
 
-        
-
         while(SDL_PollEvent(&event) != 0){
             switch(event.type){
                 case SDL_QUIT:
@@ -89,21 +81,51 @@ void gameLoop(){
                     // break;
                     switch(event.key.keysym.sym){
                         case SDLK_w:
-                            moveTriangle(&tri, UP);
+                            tri.yvel = -5;
                             break;
                         case SDLK_a:
-                            moveTriangle(&tri, LEFT);
+                            tri.xvel = -5;
                             break;
                         case SDLK_s:
-                            moveTriangle(&tri, DOWN);
+                            tri.yvel = 5;
                             break;
                         case SDLK_d:
-                            moveTriangle(&tri, RIGHT);
+                            tri.xvel = 5;
                             break;
                     }
+                    break;
+                case SDL_KEYUP:
+                    switch(event.key.keysym.sym){
+                        case SDLK_w:
+                            if(tri.yvel != 0){
+                                tri.yvel = 0;
+                            }
+                            break;
+                        case SDLK_a:
+                            if(tri.xvel != 0){
+                                tri.xvel = 0;
+                            }
+                            break;
+                        case SDLK_s:
+                            if(tri.yvel != 0){
+                                tri.yvel = 0;
+                            }
+                            break;
+                        case SDLK_d:
+                            if(tri.xvel != 0){
+                                tri.xvel = 0;
+                            }
+                            break;
+                    }
+                    break;
             }
         }
 
+        // Update game state
+        moveTriangle(&tri);
+
+
+        // Rendering starts
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
