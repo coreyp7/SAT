@@ -88,10 +88,34 @@ int gameLoop() {
                     for(int i=0; i<3; i++){
                         printf("(%f, %f) -> ", triangle[i].x, triangle[i].y);
                         triangle[i].translate(-geometric_center.x, -geometric_center.y);
-                        triangle[i].rotate(15);
+                        triangle[i].rotate(10);
                         triangle[i].translate(geometric_center.x, geometric_center.y);
 
                         printf("(%f, %f)\n", triangle[i].x, triangle[i].y);
+                    }
+                }
+                else if (event.key.keysym.sym == SDLK_w) {
+                    geometric_center.y -= 5;
+                    for (int i = 0; i < 3; i++) {
+                        triangle[i].translate(0, -5);
+                    }
+                }
+                else if (event.key.keysym.sym == SDLK_s) {
+                    geometric_center.y += 5;
+                    for (int i = 0; i < 3; i++) {
+                        triangle[i].translate(0, 5);
+                    }
+                }
+                else if (event.key.keysym.sym == SDLK_a) {
+                    geometric_center.x -= 5;
+                    for (int i = 0; i < 3; i++) {
+                        triangle[i].translate(-5, 0);
+                    }
+                }
+                else if (event.key.keysym.sym == SDLK_d) {
+                    geometric_center.x += 5;
+                    for (int i = 0; i < 3; i++) {
+                        triangle[i].translate(5, 0);
                     }
                 }
                 break;
