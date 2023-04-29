@@ -1,0 +1,2 @@
+C:\Users\Corey\Desktop\learning\c++\SAT Visual Studio\x64\Debug\SAT Visual Studio.exe
+C:\Users\Corey\Documents\GitHub\SAT\x64\Debug\SAT Visual Studio.exe
