@@ -26,8 +26,9 @@ struct Point {
         x += aX;
         y += aY;
     }
-    // ANTI-CLOCKWISE ROTATION OF Point ABOUT ORIGIN
-    void rotate(double aAngle) {
+    
+    // NOTE: Rotates around origin (0,0).
+    void rotateCW(double aAngle) {
         double xTemp = x;
         double yTemp = y;
 
@@ -37,6 +38,19 @@ struct Point {
 
         x = xTemp * c - yTemp * s;
         y = xTemp * s + yTemp * c;
+    }
+
+    // NOTE: Rotates around origin (0,0).
+    void rotateCCW(double angle) {
+        double xTemp = x;
+        double yTemp = y;
+
+        double theta = angle * M_PI / 180;
+        double c = cos(theta);
+        double s = sin(theta);
+
+        x = xTemp * c + yTemp * s;
+        y = -xTemp * s + yTemp * c;
     }
 };
 
@@ -87,8 +101,24 @@ int gameLoop() {
                     //for (auto i : triangle) {
                     for(int i=0; i<3; i++){
                         printf("(%f, %f) -> ", triangle[i].x, triangle[i].y);
+                        // Move back to (0,0) as if the center of the shape was at (0,0).
+                        // Then we can easily rotate around the origin (now the center of the triangle).
+                        // Then we move it back to where it actually is.
                         triangle[i].translate(-geometric_center.x, -geometric_center.y);
-                        triangle[i].rotate(10);
+                        triangle[i].rotateCW(10);
+                        triangle[i].translate(geometric_center.x, geometric_center.y);
+
+                        printf("(%f, %f)\n", triangle[i].x, triangle[i].y);
+                    }
+                }
+                else if (event.key.keysym.sym == SDLK_o) {
+                    for (int i = 0; i < 3; i++) {
+                        printf("(%f, %f) -> ", triangle[i].x, triangle[i].y);
+                        // Move back to (0,0) as if the center of the shape was at (0,0).
+                        // Then we can easily rotate around the origin (now the center of the triangle).
+                        // Then we move it back to where it actually is.
+                        triangle[i].translate(-geometric_center.x, -geometric_center.y);
+                        triangle[i].rotateCCW(10);
                         triangle[i].translate(geometric_center.x, geometric_center.y);
 
                         printf("(%f, %f)\n", triangle[i].x, triangle[i].y);
