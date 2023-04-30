@@ -9,9 +9,11 @@
 
 const int WINDOW_WIDTH = 500;
 const int WINDOW_HEIGHT = 500;
+const int ROTATION_ANGLE = 10;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
+
 
 struct Point {
     double x = 0;
@@ -19,14 +21,24 @@ struct Point {
     float xvel = 0;
     float yvel = 0;
 
+    bool rotatingCW = false;
+    bool rotatingCCW = false;
+
     Point(double aX = 0, double aY = 0) {
         x = aX;
         y = aY;
     }
 
-    void simulate() {
+    void simulate(Point geometric_center) {
         x += xvel;
         y += yvel;
+
+        if (rotatingCW) {
+            rotateCW(ROTATION_ANGLE, geometric_center);
+        }
+        else if (rotatingCCW) {
+            rotateCCW(ROTATION_ANGLE, geometric_center);
+        }
     }
 
     void translate(double aX, double aY) {
@@ -35,7 +47,9 @@ struct Point {
     }
     
     // NOTE: Rotates around origin (0,0).
-    void rotateCW(double aAngle) {
+    void rotateCW(float aAngle, Point geometric_center) {
+        translate(-geometric_center.x, -geometric_center.y);
+
         double xTemp = x;
         double yTemp = y;
 
@@ -45,10 +59,14 @@ struct Point {
 
         x = xTemp * c - yTemp * s;
         y = xTemp * s + yTemp * c;
+
+        translate(geometric_center.x, geometric_center.y);
     }
 
     // NOTE: Rotates around origin (0,0).
-    void rotateCCW(double angle) {
+    void rotateCCW(float angle, Point geometric_center) {
+        translate(-geometric_center.x, -geometric_center.y);
+
         double xTemp = x;
         double yTemp = y;
 
@@ -58,6 +76,8 @@ struct Point {
 
         x = xTemp * c + yTemp * s;
         y = -xTemp * s + yTemp * c;
+
+        translate(geometric_center.x, geometric_center.y);
     }
 };
 
@@ -75,7 +95,7 @@ void drawTriangle(Point triangle[]) {
 }
 
 void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> keysUp,
-    Point triangle[], Point* geometric_center, float dt) {
+    Point triangle[], Point* geometric_center) {
 
     // Handle keys down
     for (int i = 0; i < keysDown.size(); i++) {
@@ -107,16 +127,18 @@ void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> ke
             break;
         case(SDLK_p):
             for (int j = 0; j < 3; j++) {
-                triangle[j].translate(-geometric_center->x, -geometric_center->y);
-                triangle[j].rotateCW(10);
-                triangle[j].translate(geometric_center->x, geometric_center->y);
+                //triangle[j].translate(-geometric_center->x, -geometric_center->y);
+                /*triangle[j].rotateCW(10);*/
+                triangle[j].rotatingCW = true;
+                //triangle[j].translate(geometric_center->x, geometric_center->y);
             }
             break;
         case(SDLK_o):
             for (int j = 0; j < 3; j++) {
-                triangle[j].translate(-geometric_center->x, -geometric_center->y);
-                triangle[j].rotateCCW(10);
-                triangle[j].translate(geometric_center->x, geometric_center->y);
+                //triangle[j].translate(-geometric_center->x, -geometric_center->y);
+                /*triangle[j].rotateCCW(10);*/
+                triangle[j].rotatingCCW = true;
+                //triangle[j].translate(geometric_center->x, geometric_center->y);
             }
             break;
         }
@@ -140,6 +162,16 @@ void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> ke
             geometric_center->xvel = 0;
             for (int j = 0; j < 3; j++) {
                 triangle[j].xvel = 0;
+            }
+            break;
+        case(SDLK_p):
+            for (int j = 0; j < 3; j++) {
+                triangle[j].rotatingCW = false;
+            }
+            break;
+        case(SDLK_o):
+            for (int j = 0; j < 3; j++) {
+                triangle[j].rotatingCCW = false;
             }
             break;
         }
@@ -191,12 +223,12 @@ int gameLoop() {
         }
 
         //Update game state
-        dt = (SDL_GetTicks() - lastPhysicsUpdate) / 1000.0f;
-        handleInputs(keysDown, keysUp, triangle, &geometric_center, dt);
+        //dt = (SDL_GetTicks() - lastPhysicsUpdate) / 1000.0f;
+        handleInputs(keysDown, keysUp, triangle, &geometric_center);
 
-        geometric_center.simulate();
+        geometric_center.simulate(geometric_center);
         for (int i = 0; i < 3; i++) {
-            triangle[i].simulate();
+            triangle[i].simulate(geometric_center);
         }
 
         keysDown.clear();
@@ -276,144 +308,3 @@ int main(int argc, char* args[]) {
 
     return 0;
 }
-
-//typedef struct Point {
-//    SDL_FPoint point;
-//
-//    Point(float x, float y) {
-//        point.x = x;
-//        point.y = y;
-//    }
-//
-//    void translate(float aX, float aY) {
-//        point.x += aX;
-//        point.y += aY;
-//    }
-//
-//    void rotate(float angle) {
-//        float xold = point.x;
-//        float yold = point.y;
-//
-//        double theta = angle * M_PI / 180;
-//        double c = cos(theta);
-//        double s = sin(theta);
-//        
-//        point.x = xold * c - yold * s;
-//        point.y = xold * s + yold * c;
-//
-//        printf("(%f, %f) -> (%f, %f)\n", xold, yold, point.x, point.y);
-//    }
-//} Point;
-//
-//enum Direction { UP, DOWN, LEFT, RIGHT };
-//
-//void drawTriangle(Point* triangle[]) {
-//    SDL_FPoint points[4];
-//    points[0] = triangle[0]->point;
-//    points[1] = triangle[1]->point;
-//    points[2] = triangle[2]->point;
-//    points[3] = triangle[0]->point;
-//    
-//
-//    //SDL_RenderDrawPointsF(renderer, points, 3);
-//    SDL_RenderDrawLinesF(renderer, points, 4);
-//
-//}
-//
-//
-//void gameLoop() {
-//    bool quit = false;
-//    SDL_Event event;
-//    std::vector<SDL_Keycode> keysPressed;
-//
-//    Uint32 frameStart;
-//    Uint32 frameFinish;
-//
-//    float dt;
-//
-//    Point* triangle[] = { new Point(240, 250), new Point(260, 250), new Point(250, 240) };
-//    Point center(250, 250);
-//
-//
-//    while (!quit) {
-//        frameStart = SDL_GetTicks();
-//
-//        while (SDL_PollEvent(&event) != 0) {
-//            switch (event.type) {
-//            case SDL_QUIT:
-//                quit = true;
-//                break;
-//            case SDL_KEYDOWN:
-//                if (event.key.keysym.sym == SDLK_p) {
-//                    for (auto i : triangle) {
-//                        i->rotate(90);
-//                    }
-//                }
-//                break;
-//            }
-//        }
-//
-//        // Update game state
-//        //for (auto i : triangle) {
-//            // move center here
-//        //}
-//        // rotate the triangles points
-//        //for (auto i : triangle) {
-//        //    i.rotate(90);
-//        //}
-//
-//        // Rendering starts
-//        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-//        SDL_RenderClear(renderer);
-//
-//        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-//        drawTriangle(triangle);
-//
-//        SDL_RenderPresent(renderer);
-//
-//        frameFinish = SDL_GetTicks() - frameStart;
-//        if ((1000 / 60) > frameFinish) {
-//            SDL_Delay((1000 / 60) - frameFinish);
-//        }
-//
-//    }
-//}
-//
-//int main(int argc, char* args[]) {
-//    setupSDL();
-//
-//    gameLoop();
-//
-//    cleanup();
-//
-//    return 0;
-//}
-//
-//int setupSDL() {
-//    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-//        return -1;
-//    }
-//
-//    window = SDL_CreateWindow("SAT", SDL_WINDOWPOS_UNDEFINED,
-//        SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT,
-//        SDL_WINDOW_SHOWN);
-//    if (window == NULL) {
-//        printf("unsuccessful 2\n");
-//        return -2;
-//    }
-//
-//    renderer = SDL_CreateRenderer(window, -1,
-//        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-//    if (renderer == NULL) {
-//        printf("unsuccessful 3\n");
-//        return -3;
-//    }
-//
-//    printf("Successfully setup everything.\n");
-//}
-//
-//void cleanup() {
-//    SDL_DestroyRenderer(renderer);
-//    SDL_DestroyWindow(window);
-//    SDL_Quit();
-//}
