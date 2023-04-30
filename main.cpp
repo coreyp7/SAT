@@ -16,10 +16,17 @@ SDL_Renderer* renderer;
 struct Point {
     double x = 0;
     double y = 0;
+    float xvel = 0;
+    float yvel = 0;
 
     Point(double aX = 0, double aY = 0) {
         x = aX;
         y = aY;
+    }
+
+    void simulate() {
+        x += xvel;
+        y += yvel;
     }
 
     void translate(double aX, double aY) {
@@ -67,6 +74,78 @@ void drawTriangle(Point triangle[]) {
 
 }
 
+void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> keysUp,
+    Point triangle[], Point* geometric_center, float dt) {
+
+    // Handle keys down
+    for (int i = 0; i < keysDown.size(); i++) {
+        SDL_Keycode key = keysDown[i];
+        switch (key) {
+        case(SDLK_w):
+            geometric_center->yvel = -5;
+            for (int j = 0; j < 3; j++) {
+                triangle[j].yvel = -5;
+            }
+            break;
+        case(SDLK_a):
+            geometric_center->xvel = -5;
+            for (int j = 0; j < 3; j++) {
+                triangle[j].xvel = -5;
+            }
+            break;
+        case(SDLK_s):
+            geometric_center->yvel = 5;
+            for (int j = 0; j < 3; j++) {
+                triangle[j].yvel = 5;
+            }
+            break;
+        case(SDLK_d):
+            geometric_center->xvel = 5;
+            for (int j = 0; j < 3; j++) {
+                triangle[j].xvel = 5;
+            }
+            break;
+        case(SDLK_p):
+            for (int j = 0; j < 3; j++) {
+                triangle[j].translate(-geometric_center->x, -geometric_center->y);
+                triangle[j].rotateCW(10);
+                triangle[j].translate(geometric_center->x, geometric_center->y);
+            }
+            break;
+        case(SDLK_o):
+            for (int j = 0; j < 3; j++) {
+                triangle[j].translate(-geometric_center->x, -geometric_center->y);
+                triangle[j].rotateCCW(10);
+                triangle[j].translate(geometric_center->x, geometric_center->y);
+            }
+            break;
+        }
+    }
+
+    // Handle keys up
+    for (int i = 0; i < keysUp.size(); i++) {
+        SDL_Keycode key = keysUp[i];
+        switch (key) {
+        case(SDLK_w):
+        case(SDLK_s):
+            printf("Cancelled yvel");
+            geometric_center->yvel = 0;
+            for (int j = 0; j < 3; j++) {
+                triangle[j].yvel = 0;
+            }
+            break;
+        case(SDLK_a):
+        case(SDLK_d):
+            printf("Cancelled xvel");
+            geometric_center->xvel = 0;
+            for (int j = 0; j < 3; j++) {
+                triangle[j].xvel = 0;
+            }
+            break;
+        }
+    }
+}
+
 int gameLoop() {
     /*Point triangle[] = { Point(2,1), Point(3,3), Point(4,2) };
     Point geometric_center(0, 0);*/
@@ -87,6 +166,11 @@ int gameLoop() {
     SDL_Event event;
     Uint32 frameStart = SDL_GetTicks();
     Uint32 frameFinish;
+    Uint32 lastPhysicsUpdate = SDL_GetTicks();
+    float dt;
+
+    std::vector<SDL_Keycode> keysDown;
+    std::vector<SDL_Keycode> keysUp;
 
     while (!quit) {
         frameStart = SDL_GetTicks();
@@ -97,62 +181,27 @@ int gameLoop() {
                 quit = true;
                 break;
             case SDL_KEYDOWN:
-                if (event.key.keysym.sym == SDLK_p) {
-                    //for (auto i : triangle) {
-                    for(int i=0; i<3; i++){
-                        printf("(%f, %f) -> ", triangle[i].x, triangle[i].y);
-                        // Move back to (0,0) as if the center of the shape was at (0,0).
-                        // Then we can easily rotate around the origin (now the center of the triangle).
-                        // Then we move it back to where it actually is.
-                        triangle[i].translate(-geometric_center.x, -geometric_center.y);
-                        triangle[i].rotateCW(10);
-                        triangle[i].translate(geometric_center.x, geometric_center.y);
-
-                        printf("(%f, %f)\n", triangle[i].x, triangle[i].y);
-                    }
-                }
-                else if (event.key.keysym.sym == SDLK_o) {
-                    for (int i = 0; i < 3; i++) {
-                        printf("(%f, %f) -> ", triangle[i].x, triangle[i].y);
-                        // Move back to (0,0) as if the center of the shape was at (0,0).
-                        // Then we can easily rotate around the origin (now the center of the triangle).
-                        // Then we move it back to where it actually is.
-                        triangle[i].translate(-geometric_center.x, -geometric_center.y);
-                        triangle[i].rotateCCW(10);
-                        triangle[i].translate(geometric_center.x, geometric_center.y);
-
-                        printf("(%f, %f)\n", triangle[i].x, triangle[i].y);
-                    }
-                }
-                else if (event.key.keysym.sym == SDLK_w) {
-                    geometric_center.y -= 5;
-                    for (int i = 0; i < 3; i++) {
-                        triangle[i].translate(0, -5);
-                    }
-                }
-                else if (event.key.keysym.sym == SDLK_s) {
-                    geometric_center.y += 5;
-                    for (int i = 0; i < 3; i++) {
-                        triangle[i].translate(0, 5);
-                    }
-                }
-                else if (event.key.keysym.sym == SDLK_a) {
-                    geometric_center.x -= 5;
-                    for (int i = 0; i < 3; i++) {
-                        triangle[i].translate(-5, 0);
-                    }
-                }
-                else if (event.key.keysym.sym == SDLK_d) {
-                    geometric_center.x += 5;
-                    for (int i = 0; i < 3; i++) {
-                        triangle[i].translate(5, 0);
-                    }
-                }
+                // add to vector
+                keysDown.push_back(event.key.keysym.sym);
+                break;
+            case SDL_KEYUP:
+                keysUp.push_back(event.key.keysym.sym);
                 break;
             }
         }
-        //Update game state
 
+        //Update game state
+        dt = (SDL_GetTicks() - lastPhysicsUpdate) / 1000.0f;
+        handleInputs(keysDown, keysUp, triangle, &geometric_center, dt);
+
+        geometric_center.simulate();
+        for (int i = 0; i < 3; i++) {
+            triangle[i].simulate();
+        }
+
+        keysDown.clear();
+        keysUp.clear();
+        lastPhysicsUpdate = SDL_GetTicks();
 
         // Rendering starts
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
