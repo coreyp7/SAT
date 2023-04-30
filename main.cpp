@@ -244,18 +244,33 @@ int gameLoop() {
         drawTriangle(triangle);
         SDL_RenderDrawPointF(renderer, geometric_center.x, geometric_center.y);
 
+        // Draw normals ( and will do collision stuff above in similar manner )
         for (int i = 0; i < 3; i++) {
             Point currPoint = triangle[i];
             Point nextPoint = (i == 2) ? triangle[0] : triangle[i+1];
             float dx = nextPoint.x - currPoint.x;
             float dy = nextPoint.y - currPoint.y;
             Point edge = { dx, dy };
-            
             Point perpLine = { -edge.y, edge.x };
 
-            Point perpLineRenderPoint = { edge.x + perpLine.x, edge.y + perpLine.y };
+            // Actual work not done yet.
 
-            SDL_RenderDrawLineF(renderer, edge.x, edge.y, perpLineRenderPoint.x, perpLineRenderPoint.y);
+
+            // Render normals at the middle of the edge.
+            Point startPointRender = {
+                (currPoint.x + nextPoint.x)/2, (currPoint.y + nextPoint.y)/2
+            };
+
+            Point endPointRender = {
+                startPointRender.x + perpLine.x, startPointRender.y + perpLine.y
+            };
+
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            SDL_RenderDrawLineF(renderer, startPointRender.x, startPointRender.y, endPointRender.x, endPointRender.y);
+
+            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            SDL_RenderDrawPointF(renderer, startPointRender.x, startPointRender.y);
+
         }
 
         SDL_RenderPresent(renderer);
