@@ -265,47 +265,6 @@ bool SAT_collision(Point triangle[], SDL_Rect* rect) {
     return true;
 }
 
-/*perpStack.push(perpLine);*/
-
-//        // While doing this, keep track of max/min of triangle and square.
-//int tMax = NULL, tMin = NULL, sMax = NULL, sMin = NULL;
-//
-//// Now, get the dot product of each vertex of triangle with the perpLine.
-//for (int j = 0; j < 3; j++) {
-//    float dot = (triangle[j].x * perpLine.x, triangle[j].y * perpLine.y);
-//    if (tMax == NULL || dot > tMax) {
-//        tMax = dot;
-//    }
-//    if (tMin == NULL || dot < tMin) {
-//        tMin = dot;
-//    }
-//}
-//// Again, get dot product of each vertex with perpLine but with the rect now.
-//Point spoint(rect->x, rect->y);
-//Point spoint2(rect->x + rect->w, rect->y);
-//Point spoint3(rect->x, rect->y + rect->h);
-//Point spoint4(rect->x + rect->w, rect->y + rect->h);
-//float sdot1 = (spoint.x * perpLine.x, spoint.y * perpLine.y);
-//float sdot2 = (spoint2.x * perpLine.x, spoint2.y * perpLine.y);
-//float sdot3 = (spoint3.x * perpLine.x, spoint3.y * perpLine.y);
-//float sdot4 = (spoint4.x * perpLine.x, spoint4.y * perpLine.y);
-//float sdots[] = { sdot1, sdot2, sdot3, sdot4 };
-//for (int j = 0; j < 4; j++) {
-//    if (sMax == NULL || sdots[j] > sMax) {
-//        sMax = sdots[j];
-//    }
-//    if (sMin == NULL || sdots[j] < sMin) {
-//        sMin = sdots[j];
-//    }
-//}
-//
-//// Okay; now determine if there's a collision.
-//// If there isn't, printf it.
-//if (((tMin < sMax) && (tMin > sMin)) || ((sMin < tMax) && (sMin > tMin))) {
-//    printf("Not colliding!\n");
-//    return false;
-//}
-
 int gameLoop() {
     /*Point triangle[] = { Point(2,1), Point(3,3), Point(4,2) };
     Point geometric_center(0, 0);*/
@@ -329,7 +288,7 @@ int gameLoop() {
     Uint32 frameStart = SDL_GetTicks();
     Uint32 frameFinish;
     Uint32 lastPhysicsUpdate = SDL_GetTicks();
-    float dt;
+    //float dt;
 
     std::vector<SDL_Keycode> keysDown;
     std::vector<SDL_Keycode> keysUp;
@@ -365,13 +324,19 @@ int gameLoop() {
         keysUp.clear();
         lastPhysicsUpdate = SDL_GetTicks();
 
-        printf("%s\n", SAT_collision(triangle, &square) ? "true" : "false");
+        //printf("%s\n", SAT_collision(triangle, &square) ? "true" : "false");
+        bool collision = SAT_collision(triangle, &square);
 
         // Rendering starts
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        if (collision) {
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        }
+        else {
+            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+        }
         SDL_RenderDrawRect(renderer, &square);
         drawTriangle(triangle);
         SDL_RenderDrawPointF(renderer, geometric_center.x, geometric_center.y);
@@ -397,12 +362,8 @@ int gameLoop() {
                 startPointRender.x + perpLine.x, startPointRender.y + perpLine.y
             };
 
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            SDL_RenderDrawLineF(renderer, startPointRender.x, startPointRender.y, endPointRender.x, endPointRender.y);
-
             SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-            SDL_RenderDrawPointF(renderer, startPointRender.x, startPointRender.y);
-
+            SDL_RenderDrawLineF(renderer, startPointRender.x, startPointRender.y, endPointRender.x, endPointRender.y);
         }
 
         SDL_RenderPresent(renderer);
