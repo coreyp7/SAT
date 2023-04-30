@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <vector>
 #include <math.h>
+#include <stack>
 
 //int setupSDL();
 //void cleanup();
@@ -150,7 +151,7 @@ void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> ke
         switch (key) {
         case(SDLK_w):
         case(SDLK_s):
-            printf("Cancelled yvel");
+            //printf("Cancelled yvel");
             geometric_center->yvel = 0;
             for (int j = 0; j < 3; j++) {
                 triangle[j].yvel = 0;
@@ -158,7 +159,7 @@ void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> ke
             break;
         case(SDLK_a):
         case(SDLK_d):
-            printf("Cancelled xvel");
+            //printf("Cancelled xvel");
             geometric_center->xvel = 0;
             for (int j = 0; j < 3; j++) {
                 triangle[j].xvel = 0;
@@ -178,9 +179,130 @@ void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> ke
     }
 }
 
+bool SAT_collision(Point triangle[], SDL_Rect* rect) {
+    std::stack<Point> perpStack;
+    // Loop through all edges in triangle and put normal vectors on stack.
+    for (int i = 0; i < 3; i++) {
+        Point currPoint = triangle[i];
+        Point nextPoint = (i == 2) ? triangle[0] : triangle[i + 1];
+        float dx = nextPoint.x - currPoint.x;
+        float dy = nextPoint.y - currPoint.y;
+        Point edge = { dx, dy };
+        Point perpLine = { -edge.y, edge.x };
+
+        perpStack.push(perpLine);
+    }
+
+    // Loop through all edges in rect and put normals on stack.
+    Point spoint(rect->x, rect->y);
+    Point spoint2(rect->x + rect->w, rect->y);
+    Point spoint3(rect->x, rect->y + rect->h);
+    Point spoint4(rect->x + rect->w, rect->y + rect->h);
+    Point spoints[] = { spoint, spoint2, spoint3, spoint4 };
+    for (int i = 0; i < 4; i++) {
+        Point currPoint = spoints[i];
+        Point nextPoint = (i == 3) ? spoints[0] : spoints[i + 1];
+        float dx = nextPoint.x - currPoint.x;
+        float dy = nextPoint.y - currPoint.y;
+        Point edge = { dx, dy };
+        Point perpLine = { -edge.y, edge.x };
+
+        perpStack.push(perpLine);
+    }
+
+    float tmin, tmax, smin, smax;
+    // Ok, we have our stack of perp lines. Let's go through all of them.
+    for (int i = 0; i < perpStack.size(); i++) {
+        tmin = NULL;
+        tmax = NULL;
+        smin = NULL;
+        smax = NULL;
+
+        Point perpLine = perpStack.top();
+        
+        // First, go through triangle vertices.
+        for (int j = 0; j < 3; j++) {
+            float dot = (triangle[j].x * perpLine.x, triangle[j].y * perpLine.y);
+            if (tmax == NULL || dot > tmax) {
+                tmax = dot;
+            }
+            if (tmin == NULL || dot < tmin) {
+                tmin = dot;
+            }
+        }
+
+        // Now go through square vertices
+        for (int j = 0; j < 4; j++) {
+            float dot = (spoints[j].x * perpLine.x, spoints[j].y * perpLine.y);
+            if (smax == NULL || dot > smax) {
+                smax = dot;
+            }
+            if (smin == NULL || dot < smin) {
+                smin = dot;
+            }
+        }
+
+        if ((tmin < smax && tmin > smin) || (smin < tmax && smin > tmin)) {
+            // Continue with loop, there's a collision here.
+            // All done, get rid of this normal.
+            perpStack.pop();
+        }
+        else {
+            return false;
+        }
+
+
+        //// All done, get rid of this normal.
+        //perpStack.pop();
+    }
+    return true;
+}
+
+/*perpStack.push(perpLine);*/
+
+//        // While doing this, keep track of max/min of triangle and square.
+//int tMax = NULL, tMin = NULL, sMax = NULL, sMin = NULL;
+//
+//// Now, get the dot product of each vertex of triangle with the perpLine.
+//for (int j = 0; j < 3; j++) {
+//    float dot = (triangle[j].x * perpLine.x, triangle[j].y * perpLine.y);
+//    if (tMax == NULL || dot > tMax) {
+//        tMax = dot;
+//    }
+//    if (tMin == NULL || dot < tMin) {
+//        tMin = dot;
+//    }
+//}
+//// Again, get dot product of each vertex with perpLine but with the rect now.
+//Point spoint(rect->x, rect->y);
+//Point spoint2(rect->x + rect->w, rect->y);
+//Point spoint3(rect->x, rect->y + rect->h);
+//Point spoint4(rect->x + rect->w, rect->y + rect->h);
+//float sdot1 = (spoint.x * perpLine.x, spoint.y * perpLine.y);
+//float sdot2 = (spoint2.x * perpLine.x, spoint2.y * perpLine.y);
+//float sdot3 = (spoint3.x * perpLine.x, spoint3.y * perpLine.y);
+//float sdot4 = (spoint4.x * perpLine.x, spoint4.y * perpLine.y);
+//float sdots[] = { sdot1, sdot2, sdot3, sdot4 };
+//for (int j = 0; j < 4; j++) {
+//    if (sMax == NULL || sdots[j] > sMax) {
+//        sMax = sdots[j];
+//    }
+//    if (sMin == NULL || sdots[j] < sMin) {
+//        sMin = sdots[j];
+//    }
+//}
+//
+//// Okay; now determine if there's a collision.
+//// If there isn't, printf it.
+//if (((tMin < sMax) && (tMin > sMin)) || ((sMin < tMax) && (sMin > tMin))) {
+//    printf("Not colliding!\n");
+//    return false;
+//}
+
 int gameLoop() {
     /*Point triangle[] = { Point(2,1), Point(3,3), Point(4,2) };
     Point geometric_center(0, 0);*/
+    SDL_Rect square = { 300, 300, 75, 75 };
 
     //Point triangle[] = { Point(252,251), Point(253,253), Point(254,252) };
     Point triangle[] = { Point(200, 200), Point(270, 190), Point(210, 140) };
@@ -236,11 +358,14 @@ int gameLoop() {
         keysUp.clear();
         lastPhysicsUpdate = SDL_GetTicks();
 
+        printf("%s\n", SAT_collision(triangle, &square) ? "true" : "false");
+
         // Rendering starts
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderDrawRect(renderer, &square);
         drawTriangle(triangle);
         SDL_RenderDrawPointF(renderer, geometric_center.x, geometric_center.y);
 
@@ -314,7 +439,7 @@ int setupSDL() {
         SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_SHOWN);
     if (window == NULL) {
-        printf("unsuccessful 2\n");
+        //printf("unsuccessful 2\n");
         return -2;
     }
 
@@ -325,7 +450,7 @@ int setupSDL() {
         return -3;
     }
 
-    printf("Successfully setup everything.\n");
+    //printf("Successfully setup everything.\n");
 }
 
 int main(int argc, char* args[]) {
