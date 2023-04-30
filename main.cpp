@@ -9,22 +9,22 @@
 
 const int WINDOW_WIDTH = 500;
 const int WINDOW_HEIGHT = 500;
-const int ROTATION_ANGLE = 10;
+const int ROTATION_ANGLE = 1;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
 
 
 struct Point {
-    double x = 0;
-    double y = 0;
+    float x = 0;
+    float y = 0;
     float xvel = 0;
     float yvel = 0;
 
     bool rotatingCW = false;
     bool rotatingCCW = false;
 
-    Point(double aX = 0, double aY = 0) {
+    Point(float aX = 0, float aY = 0) {
         x = aX;
         y = aY;
     }
@@ -41,7 +41,7 @@ struct Point {
         }
     }
 
-    void translate(double aX, double aY) {
+    void translate(float aX, float aY) {
         x += aX;
         y += aY;
     }
@@ -184,6 +184,7 @@ int gameLoop() {
 
     //Point triangle[] = { Point(252,251), Point(253,253), Point(254,252) };
     Point triangle[] = { Point(200, 200), Point(270, 190), Point(210, 140) };
+    //Point triangle[] = { Point(100, 200), Point(250, 50), Point(400, 200) };
     Point geometric_center(0, 0);
 
     for (auto i : triangle) {
@@ -242,6 +243,20 @@ int gameLoop() {
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         drawTriangle(triangle);
         SDL_RenderDrawPointF(renderer, geometric_center.x, geometric_center.y);
+
+        for (int i = 0; i < 3; i++) {
+            Point currPoint = triangle[i];
+            Point nextPoint = (i == 2) ? triangle[0] : triangle[i+1];
+            float dx = nextPoint.x - currPoint.x;
+            float dy = nextPoint.y - currPoint.y;
+            Point edge = { dx, dy };
+            
+            Point perpLine = { -edge.y, edge.x };
+
+            Point perpLineRenderPoint = { edge.x + perpLine.x, edge.y + perpLine.y };
+
+            SDL_RenderDrawLineF(renderer, edge.x, edge.y, perpLineRenderPoint.x, perpLineRenderPoint.y);
+        }
 
         SDL_RenderPresent(renderer);
 
