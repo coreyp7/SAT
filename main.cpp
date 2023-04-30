@@ -3,6 +3,7 @@
 #include <vector>
 #include <math.h>
 #include <stack>
+#include <array>
 
 //int setupSDL();
 //void cleanup();
@@ -180,7 +181,8 @@ void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> ke
 }
 
 bool SAT_collision(Point triangle[], SDL_Rect* rect) {
-    std::stack<Point> perpStack;
+    //std::stack<Point> perpStack;
+    Point perpStack[7];
     // Loop through all edges in triangle and put normal vectors on stack.
     for (int i = 0; i < 3; i++) {
         Point currPoint = triangle[i];
@@ -190,14 +192,17 @@ bool SAT_collision(Point triangle[], SDL_Rect* rect) {
         Point edge = { dx, dy };
         Point perpLine = { -edge.y, edge.x };
 
-        perpStack.push(perpLine);
+        //perpStack.push(perpLine);
+        perpStack[i] = perpLine;
     }
 
     // Loop through all edges in rect and put normals on stack.
     Point spoint(rect->x, rect->y);
     Point spoint2(rect->x + rect->w, rect->y);
-    Point spoint3(rect->x, rect->y + rect->h);
-    Point spoint4(rect->x + rect->w, rect->y + rect->h);
+    /*Point spoint3(rect->x, rect->y + rect->h);
+    Point spoint4(rect->x + rect->w, rect->y + rect->h);*/
+    Point spoint4(rect->x, rect->y + rect->h);
+    Point spoint3(rect->x + rect->w, rect->y + rect->h);
     Point spoints[] = { spoint, spoint2, spoint3, spoint4 };
     for (int i = 0; i < 4; i++) {
         Point currPoint = spoints[i];
@@ -207,22 +212,24 @@ bool SAT_collision(Point triangle[], SDL_Rect* rect) {
         Point edge = { dx, dy };
         Point perpLine = { -edge.y, edge.x };
 
-        perpStack.push(perpLine);
+        /*perpStack.push(perpLine);*/
+        perpStack[i + 3] = perpLine;
     }
 
     float tmin, tmax, smin, smax;
+    Point perpLine;
+    //int perpStackSize = perpStack.size();
     // Ok, we have our stack of perp lines. Let's go through all of them.
-    for (int i = 0; i < perpStack.size(); i++) {
+    for (int i = 0; i < 7; i++) {
+        perpLine = perpStack[i];
         tmin = NULL;
         tmax = NULL;
         smin = NULL;
         smax = NULL;
-
-        Point perpLine = perpStack.top();
         
         // First, go through triangle vertices.
         for (int j = 0; j < 3; j++) {
-            float dot = (triangle[j].x * perpLine.x, triangle[j].y * perpLine.y);
+            float dot = ((triangle[j].x * perpLine.x) + (triangle[j].y * perpLine.y));
             if (tmax == NULL || dot > tmax) {
                 tmax = dot;
             }
@@ -233,7 +240,7 @@ bool SAT_collision(Point triangle[], SDL_Rect* rect) {
 
         // Now go through square vertices
         for (int j = 0; j < 4; j++) {
-            float dot = (spoints[j].x * perpLine.x, spoints[j].y * perpLine.y);
+            float dot = ((spoints[j].x * perpLine.x) + (spoints[j].y * perpLine.y));
             if (smax == NULL || dot > smax) {
                 smax = dot;
             }
@@ -242,10 +249,10 @@ bool SAT_collision(Point triangle[], SDL_Rect* rect) {
             }
         }
 
-        if ((tmin < smax && tmin > smin) || (smin < tmax && smin > tmin)) {
+        if (((tmin < smax) && (tmin > smin)) || ((smin < tmax) && (smin > tmin))) {
             // Continue with loop, there's a collision here.
             // All done, get rid of this normal.
-            perpStack.pop();
+            /*perpStack.pop();*/
         }
         else {
             return false;
