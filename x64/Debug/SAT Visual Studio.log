@@ -1,5 +1,5 @@
 ﻿  main.cpp
-C:\Users\Corey\Documents\GitHub\SAT\main.cpp(109,76): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Corey\Documents\GitHub\SAT\main.cpp(109,56): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\Corey\Documents\GitHub\SAT\main.cpp(164): warning C4715: 'setupSDL': not all control paths return a value
+C:\Users\Corey\Documents\GitHub\SAT\main.cpp(212,76): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Corey\Documents\GitHub\SAT\main.cpp(212,56): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Corey\Documents\GitHub\SAT\main.cpp(267): warning C4715: 'setupSDL': not all control paths return a value
   SAT Visual Studio.vcxproj -> C:\Users\Corey\Documents\GitHub\SAT\x64\Debug\SAT Visual Studio.exe
