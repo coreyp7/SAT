@@ -5,13 +5,15 @@
 #include <stack>
 #include <array>
 
+#include "Polygon.h"
+
 //int setupSDL();
 //void cleanup();
 //void gameLoop();
 
 const int WINDOW_WIDTH = 500;
 const int WINDOW_HEIGHT = 500;
-const int ROTATION_ANGLE = 1;
+const int ROTATION_ANGLE = 15;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -270,15 +272,7 @@ int gameLoop() {
     Point geometric_center(0, 0);*/
     SDL_Rect square = { 300, 300, 75, 75 };
 
-    //Point triangle[] = { Point(252,251), Point(253,253), Point(254,252) };
-    Point triangle[] = { Point(200, 200), Point(270, 190), Point(210, 140) };
-    //Point triangle[] = { Point(100, 200), Point(250, 50), Point(400, 200) };
-    Point geometric_center(0, 0);
-
-    for (auto i : triangle) {
-        geometric_center.x += i.x / 3;
-        geometric_center.y += i.y / 3;
-    }
+    Polygon triangle = Polygon();
 
    /* Point triangle[] = { Point(252,251), Point(253,253), Point(254,252) };
     Point geometric_center(250, 250);*/
@@ -313,58 +307,63 @@ int gameLoop() {
 
         //Update game state
         //dt = (SDL_GetTicks() - lastPhysicsUpdate) / 1000.0f;
-        handleInputs(keysDown, keysUp, triangle, &geometric_center);
+        
+        //handleInputs(keysDown, keysUp, triangle);
 
-        geometric_center.simulate(geometric_center);
+        /*geometric_center.simulate(geometric_center);
         for (int i = 0; i < 3; i++) {
             triangle[i].simulate(geometric_center);
-        }
+        }*/
+        
+        //triangle.simulate();
 
         keysDown.clear();
         keysUp.clear();
         lastPhysicsUpdate = SDL_GetTicks();
 
         //printf("%s\n", SAT_collision(triangle, &square) ? "true" : "false");
-        bool collision = SAT_collision(triangle, &square);
+        //bool collision = SAT_collision(triangle, &square);
 
         // Rendering starts
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        if (collision) {
+        /*if (collision) {
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         }
         else {
             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-        }
+        }*/
         SDL_RenderDrawRect(renderer, &square);
-        drawTriangle(triangle);
-        SDL_RenderDrawPointF(renderer, geometric_center.x, geometric_center.y);
+        //drawTriangle(triangle);
+        triangle.render(renderer);
+
+        //SDL_RenderDrawPointF(renderer, geometric_center.x, geometric_center.y);
 
         // Draw normals ( and will do collision stuff above in similar manner )
-        for (int i = 0; i < 3; i++) {
-            Point currPoint = triangle[i];
-            Point nextPoint = (i == 2) ? triangle[0] : triangle[i+1];
-            float dx = nextPoint.x - currPoint.x;
-            float dy = nextPoint.y - currPoint.y;
-            Point edge = { dx, dy };
-            Point perpLine = { -edge.y, edge.x };
+        //for (int i = 0; i < 3; i++) {
+        //    Point currPoint = triangle[i];
+        //    Point nextPoint = (i == 2) ? triangle[0] : triangle[i+1];
+        //    float dx = nextPoint.x - currPoint.x;
+        //    float dy = nextPoint.y - currPoint.y;
+        //    Point edge = { dx, dy };
+        //    Point perpLine = { -edge.y, edge.x };
 
-            // Actual work not done yet.
+        //    // Actual work not done yet.
 
 
-            // Render normals at the middle of the edge.
-            Point startPointRender = {
-                (currPoint.x + nextPoint.x)/2, (currPoint.y + nextPoint.y)/2
-            };
+        //    // Render normals at the middle of the edge.
+        //    Point startPointRender = {
+        //        (currPoint.x + nextPoint.x)/2, (currPoint.y + nextPoint.y)/2
+        //    };
 
-            Point endPointRender = {
-                startPointRender.x + perpLine.x, startPointRender.y + perpLine.y
-            };
+        //    Point endPointRender = {
+        //        startPointRender.x + perpLine.x, startPointRender.y + perpLine.y
+        //    };
 
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-            SDL_RenderDrawLineF(renderer, startPointRender.x, startPointRender.y, endPointRender.x, endPointRender.y);
-        }
+        //    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+        //    SDL_RenderDrawLineF(renderer, startPointRender.x, startPointRender.y, endPointRender.x, endPointRender.y);
+        //}
 
         SDL_RenderPresent(renderer);
 
