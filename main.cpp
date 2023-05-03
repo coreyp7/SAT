@@ -135,7 +135,7 @@ void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> ke
     }
 }
 
-bool SAT_collision(Polygon* polygon, SDL_FRect* rect) {
+bool SAT_collision(Polygon* polygon, Polygon* polygon2) {
     //std::stack<Point> perpStack;
     /*SDL_FPoint perpStack[polygon.verticesSize];*/
     //std::stack<SDL_FPoint> perpStack;
@@ -155,24 +155,16 @@ bool SAT_collision(Polygon* polygon, SDL_FRect* rect) {
         //perpStack[i] = perpLine;
     }
 
-    // Loop through all edges in rect and put normals on stack. ALL THIS IS HARDCODED FOR NOW DON'T WORRY ABOUT IT
-    SDL_FPoint spoint = { rect->x, rect->y };
-    SDL_FPoint spoint2 = { rect->x + rect->w, rect->y };
-    /*Point spoint3(rect->x, rect->y + rect->h);
-    Point spoint4(rect->x + rect->w, rect->y + rect->h);*/
-    SDL_FPoint spoint4 = { rect->x, rect->y + rect->h };
-    SDL_FPoint spoint3 = { rect->x + rect->w, rect->y + rect->h };
-    SDL_FPoint spoints[] = { spoint, spoint2, spoint3, spoint4 };
-    for (int i = 0; i < 4; i++) {
-        SDL_FPoint currPoint = spoints[i];
-        SDL_FPoint nextPoint = (i == 3) ? spoints[0] : spoints[i + 1];
+    for (int i = 0; i < polygon2->verticesSize; i++) {
+        SDL_FPoint currPoint = polygon2->vertices[i];
+        SDL_FPoint nextPoint = (i == polygon2->verticesSize - 1) ? polygon2->vertices[0] : polygon2->vertices[i + 1];
         float dx = nextPoint.x - currPoint.x;
         float dy = nextPoint.y - currPoint.y;
         SDL_FPoint edge = { dx, dy };
         SDL_FPoint perpLine = { -edge.y, edge.x };
 
         perpStack.push_back(perpLine);
-        //perpStack[i + 3] = perpLine;
+        //perpStack[i] = perpLine;
     }
 
     float tmin, tmax, smin, smax;
@@ -187,7 +179,8 @@ bool SAT_collision(Polygon* polygon, SDL_FRect* rect) {
         smin = NULL;
         smax = NULL;
         
-        // First, go through triangle vertices.
+        // Multiply each vertices in polygon by normal, set as max/min.
+        // (Do this for both polygons)
         for (int j = 0; j < polygon->verticesSize; j++) {
             float dot = ((polygon->vertices[j].x * perpLine.x) + (polygon->vertices[j].y * perpLine.y));
             if (tmax == NULL || dot > tmax) {
@@ -198,9 +191,8 @@ bool SAT_collision(Polygon* polygon, SDL_FRect* rect) {
             }
         }
 
-        // Now go through square vertices
-        for (int j = 0; j < 4; j++) {
-            float dot = ((spoints[j].x * perpLine.x) + (spoints[j].y * perpLine.y));
+        for (int j = 0; j < polygon2->verticesSize; j++) {
+            float dot = ((polygon2->vertices[j].x * perpLine.x) + (polygon2->vertices[j].y * perpLine.y));
             if (smax == NULL || dot > smax) {
                 smax = dot;
             }
@@ -228,9 +220,12 @@ bool SAT_collision(Polygon* polygon, SDL_FRect* rect) {
 int gameLoop() {
     /*Point triangle[] = { Point(2,1), Point(3,3), Point(4,2) };
     Point geometric_center(0, 0);*/
-    SDL_FRect square = { 300, 300, 75, 75 };
+    //SDL_FRect square = { 300, 300, 75, 75 };
 
-    Polygon triangle = Polygon();
+    SDL_FPoint trianglePoints[3] = { {200, 200}, {270, 180}, {230, 120} };
+    Polygon triangle = Polygon(trianglePoints, 3);
+    SDL_FPoint squarePoints[4] = { {300, 300}, {350, 300}, {350, 350}, {300, 350} };
+    Polygon square = Polygon(squarePoints, 4);
 
    /* Point triangle[] = { Point(252,251), Point(253,253), Point(254,252) };
     Point geometric_center(250, 250);*/
@@ -244,6 +239,8 @@ int gameLoop() {
 
     std::vector<SDL_Keycode> keysDown;
     std::vector<SDL_Keycode> keysUp;
+
+    //triangle.rotate(5); // weird fix: don't know what this is about
 
     while (!quit) {
         frameStart = SDL_GetTicks();
@@ -266,15 +263,17 @@ int gameLoop() {
         //Update game state
         //dt = (SDL_GetTicks() - lastPhysicsUpdate) / 1000.0f;
         
-        handleInputs(keysDown, keysUp, &triangle);
-        triangle.simulate();
+        //handleInputs(keysDown, keysUp, &triangle);
+        //triangle.simulate();
+        handleInputs(keysDown, keysUp, &square);
+        square.simulate();
 
         keysDown.clear();
         keysUp.clear();
         lastPhysicsUpdate = SDL_GetTicks();
 
         bool collision = SAT_collision(&triangle, &square);
-        printf("%s\n", collision ? "true" : "");
+        //printf("%s\n", collision ? "true" : "");
 
         // Rendering starts
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -286,8 +285,11 @@ int gameLoop() {
         else {
             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
         }
-        SDL_RenderDrawRectF(renderer, &square);
+        //SDL_RenderDrawRectF(renderer, &square);
+
+        //SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
         triangle.render(renderer);
+        square.render(renderer);
 
         //SDL_RenderDrawPointF(renderer, geometric_center.x, geometric_center.y);
 

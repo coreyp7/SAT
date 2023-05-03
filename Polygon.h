@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL.h>
+//#include <vector>
 
 class Polygon {
 public:
@@ -15,7 +16,7 @@ public:
 	// For now, polygon will be hardcoded as a triangle only.
 	// Then later I'll make the constructor work properly to
 	// accept any set of points.
-	Polygon();
+	Polygon(SDL_FPoint* points, int size);
 	~Polygon();
 	
 	// Function for rotating entire shape.

@@ -1,12 +1,18 @@
 #include "Polygon.h"
 
-Polygon::Polygon() {
-	vertices = new SDL_FPoint[3];
+Polygon::Polygon(SDL_FPoint* points, int size) {
+	/*vertices = new SDL_FPoint[3];
 	verticesSize = 3;
 
 	vertices[0] = { 200, 200 };
 	vertices[1] = { 270, 180 };
-	vertices[2] = { 230, 120 };
+	vertices[2] = { 230, 120 };*/
+
+	verticesSize = size;
+	vertices = new SDL_FPoint[size];
+	for (int i = 0; i < size; i++) {
+		vertices[i] = points[i];
+	}
 
 	centerPoint.x = 0;
 	centerPoint.y = 0;
