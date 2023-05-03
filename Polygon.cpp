@@ -29,7 +29,7 @@ Polygon::~Polygon() {
 
 void Polygon::render(SDL_Renderer* renderer) {
 	// Render polygon edges
-	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+	// SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
 	SDL_RenderDrawPoint(renderer, centerPoint.x, centerPoint.y);
 	SDL_RenderDrawLinesF(renderer, vertices, verticesSize);
 	SDL_RenderDrawLine(renderer, 
@@ -57,7 +57,7 @@ void Polygon::render(SDL_Renderer* renderer) {
 			startPointRender.x + perpLine.x, startPointRender.y + perpLine.y
 		};
 
-		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+		//SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		SDL_RenderDrawLineF(renderer, startPointRender.x, startPointRender.y, endPointRender.x, endPointRender.y);
 	}
 }
@@ -93,6 +93,8 @@ void Polygon::rotate(float angle) {
 		float rotatedx = xOrigin * cos(theta) - yOrigin * sin(theta);
 		float rotatedy = xOrigin * sin(theta) + yOrigin * cos(theta);
 
+		// translate rotatedx back to position 
+		// around center of polygon's real position.
 		vertices[i].x = rotatedx + centerPoint.x;
 		vertices[i].y = rotatedy + centerPoint.y;
 	}
