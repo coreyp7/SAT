@@ -99,51 +99,34 @@ void drawTriangle(Point triangle[]) {
 }
 
 void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> keysUp,
-    Point triangle[], Point* geometric_center) {
+    Polygon* polygon) {
 
     // Handle keys down
     for (int i = 0; i < keysDown.size(); i++) {
         SDL_Keycode key = keysDown[i];
         switch (key) {
         case(SDLK_w):
-            geometric_center->yvel = -5;
-            for (int j = 0; j < 3; j++) {
-                triangle[j].yvel = -5;
-            }
+            polygon->yvel = -5;
             break;
         case(SDLK_a):
-            geometric_center->xvel = -5;
-            for (int j = 0; j < 3; j++) {
-                triangle[j].xvel = -5;
-            }
+            polygon->xvel = -5;
             break;
         case(SDLK_s):
-            geometric_center->yvel = 5;
-            for (int j = 0; j < 3; j++) {
-                triangle[j].yvel = 5;
-            }
+            polygon->yvel = 5;
             break;
         case(SDLK_d):
-            geometric_center->xvel = 5;
-            for (int j = 0; j < 3; j++) {
-                triangle[j].xvel = 5;
-            }
+            polygon->xvel = 5;
             break;
         case(SDLK_p):
-            for (int j = 0; j < 3; j++) {
-                //triangle[j].translate(-geometric_center->x, -geometric_center->y);
-                /*triangle[j].rotateCW(10);*/
-                triangle[j].rotatingCW = true;
-                //triangle[j].translate(geometric_center->x, geometric_center->y);
-            }
+            polygon->rotatingCW = true;
             break;
         case(SDLK_o):
-            for (int j = 0; j < 3; j++) {
+            //for (int j = 0; j < 3; j++) {
                 //triangle[j].translate(-geometric_center->x, -geometric_center->y);
                 /*triangle[j].rotateCCW(10);*/
-                triangle[j].rotatingCCW = true;
                 //triangle[j].translate(geometric_center->x, geometric_center->y);
-            }
+            polygon->rotatingCCW = true;
+            //}
             break;
         }
     }
@@ -154,29 +137,17 @@ void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> ke
         switch (key) {
         case(SDLK_w):
         case(SDLK_s):
-            //printf("Cancelled yvel");
-            geometric_center->yvel = 0;
-            for (int j = 0; j < 3; j++) {
-                triangle[j].yvel = 0;
-            }
+            polygon->yvel = 0;
             break;
         case(SDLK_a):
         case(SDLK_d):
-            //printf("Cancelled xvel");
-            geometric_center->xvel = 0;
-            for (int j = 0; j < 3; j++) {
-                triangle[j].xvel = 0;
-            }
+            polygon->xvel = 0;
             break;
         case(SDLK_p):
-            for (int j = 0; j < 3; j++) {
-                triangle[j].rotatingCW = false;
-            }
+            polygon->rotatingCW = false;
             break;
         case(SDLK_o):
-            for (int j = 0; j < 3; j++) {
-                triangle[j].rotatingCCW = false;
-            }
+            polygon->rotatingCCW = false;
             break;
         }
     }
@@ -308,14 +279,8 @@ int gameLoop() {
         //Update game state
         //dt = (SDL_GetTicks() - lastPhysicsUpdate) / 1000.0f;
         
-        //handleInputs(keysDown, keysUp, triangle);
-
-        /*geometric_center.simulate(geometric_center);
-        for (int i = 0; i < 3; i++) {
-            triangle[i].simulate(geometric_center);
-        }*/
-        
-        //triangle.simulate();
+        handleInputs(keysDown, keysUp, &triangle);
+        triangle.simulate();
 
         keysDown.clear();
         keysUp.clear();
