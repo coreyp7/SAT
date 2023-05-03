@@ -106,7 +106,7 @@ void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> ke
             break;
         case(SDLK_p):
             polygon->rotatingCW = true;
-            break;
+break;
         case(SDLK_o):
             polygon->rotatingCCW = true;
             break;
@@ -140,12 +140,12 @@ bool SAT_collision(Polygon* polygon, Polygon* polygon2) {
     /*SDL_FPoint perpStack[polygon.verticesSize];*/
     //std::stack<SDL_FPoint> perpStack;
     std::vector<SDL_FPoint> perpStack;
-    
+
     // Loop through all edges in triangle and put normal vectors on stack.
     // Loop through all edges in polygon and put normal vectors on stack.
     for (int i = 0; i < polygon->verticesSize; i++) {
         SDL_FPoint currPoint = polygon->vertices[i];
-        SDL_FPoint nextPoint = (i == polygon->verticesSize-1) ? polygon->vertices[0] : polygon->vertices[i + 1];
+        SDL_FPoint nextPoint = (i == polygon->verticesSize - 1) ? polygon->vertices[0] : polygon->vertices[i + 1];
         float dx = nextPoint.x - currPoint.x;
         float dy = nextPoint.y - currPoint.y;
         SDL_FPoint edge = { dx, dy };
@@ -171,14 +171,14 @@ bool SAT_collision(Polygon* polygon, Polygon* polygon2) {
     SDL_FPoint perpLine;
     //int perpStackSize = perpStack.size();
     // Ok, we have our stack of perp lines. Let's go through all of them.
-    for (int i = 0; i < polygon->verticesSize + 4; i++) {
+    for (int i = 0; i < perpStack.size(); i++) {
         //perpLine = perpStack[i];
         perpLine = perpStack[i];
         tmin = NULL;
         tmax = NULL;
         smin = NULL;
         smax = NULL;
-        
+
         // Multiply each vertices in polygon by normal, set as max/min.
         // (Do this for both polygons)
         for (int j = 0; j < polygon->verticesSize; j++) {
@@ -201,10 +201,13 @@ bool SAT_collision(Polygon* polygon, Polygon* polygon2) {
             }
         }
 
-        if (((tmin < smax) && (tmin > smin)) || ((smin < tmax) && (smin > tmin))) {
+        if (((tmin <= smax) && (tmin >= smin)) || ((smin <= tmax) && (smin >= tmin))) {
             // Continue with loop, there's a collision here.
             // All done, get rid of this normal.
             //perpStack.pop();
+        }
+        else if ((tmin >= smin) && (tmax <= smax) || (smin >= tmin) && (smax <= tmax)){
+            // For when a shape is engulfed by another. (i think)
         }
         else {
             return false;
@@ -226,6 +229,10 @@ int gameLoop() {
     Polygon triangle = Polygon(trianglePoints, 3);
     SDL_FPoint squarePoints[4] = { {300, 300}, {350, 300}, {350, 350}, {300, 350} };
     Polygon square = Polygon(squarePoints, 4);
+    SDL_FPoint pentaPoints[5] = {
+        {200, 200},{250, 250},{230, 300},{170, 300},{150, 250}
+    };
+    Polygon penta = Polygon(pentaPoints, 5);
 
    /* Point triangle[] = { Point(252,251), Point(253,253), Point(254,252) };
     Point geometric_center(250, 250);*/
@@ -265,14 +272,16 @@ int gameLoop() {
         
         //handleInputs(keysDown, keysUp, &triangle);
         //triangle.simulate();
-        handleInputs(keysDown, keysUp, &square);
-        square.simulate();
+        //handleInputs(keysDown, keysUp, &square);
+        //square.simulate();
+        handleInputs(keysDown, keysUp, &penta);
+        penta.simulate();
 
         keysDown.clear();
         keysUp.clear();
         lastPhysicsUpdate = SDL_GetTicks();
 
-        bool collision = SAT_collision(&triangle, &square);
+        bool collision = SAT_collision(&square, &penta);
         //printf("%s\n", collision ? "true" : "");
 
         // Rendering starts
@@ -290,6 +299,7 @@ int gameLoop() {
         //SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
         triangle.render(renderer);
         square.render(renderer);
+        penta.render(renderer);
 
         //SDL_RenderDrawPointF(renderer, geometric_center.x, geometric_center.y);
 

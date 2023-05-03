@@ -51,9 +51,6 @@ void Polygon::render(SDL_Renderer* renderer) {
 		SDL_FPoint edge = { dx, dy };
 		SDL_FPoint perpLine = { -edge.y, edge.x };
 
-		// Actual work not done yet.
-
-
 		// Render normals at the middle of the edge.
 		SDL_FPoint startPointRender = {
 			(currPoint.x + nextPoint.x) / 2, (currPoint.y + nextPoint.y) / 2
@@ -78,10 +75,10 @@ void Polygon::simulate() {
 	}
 
 	if (rotatingCW) {
-		rotate(5);
+		rotate(.25);
 	}
 	else if (rotatingCCW) {
-		rotate(-5);
+		rotate(-.25);
 	}
 }
 
@@ -106,14 +103,14 @@ void Polygon::rotate(float angle) {
 	}
 }
 
-// Translates only the points, NOT the center.
-// Used when rotating the shape only.
-void Polygon::translate(float x, float y) {
-	/*centerPoint.x += x;
-	centerPoint.y += y;*/
-	/*for (int i = 0; i < verticesSize; i++) {
-		vertices[i].x = x;
-		vertices[i].y = y;
-	}*/
-}
+//// Translates only the points, NOT the center.
+//// Used when rotating the shape only.
+//void Polygon::translate(float x, float y) {
+//	/*centerPoint.x += x;
+//	centerPoint.y += y;*/
+//	/*for (int i = 0; i < verticesSize; i++) {
+//		vertices[i].x = x;
+//		vertices[i].y = y;
+//	}*/
+//}
 
