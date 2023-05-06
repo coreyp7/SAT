@@ -19,71 +19,71 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 
 
-struct Point {
-    float x = 0;
-    float y = 0;
-    float xvel = 0;
-    float yvel = 0;
-
-    bool rotatingCW = false;
-    bool rotatingCCW = false;
-
-    Point(float aX = 0, float aY = 0) {
-        x = aX;
-        y = aY;
-    }
-
-    void simulate(Point geometric_center) {
-        x += xvel;
-        y += yvel;
-
-        if (rotatingCW) {
-            rotateCW(ROTATION_ANGLE, geometric_center);
-        }
-        else if (rotatingCCW) {
-            rotateCCW(ROTATION_ANGLE, geometric_center);
-        }
-    }
-
-    void translate(float aX, float aY) {
-        x += aX;
-        y += aY;
-    }
-    
-    // NOTE: Rotates around origin (0,0).
-    void rotateCW(float aAngle, Point geometric_center) {
-        translate(-geometric_center.x, -geometric_center.y);
-
-        double xTemp = x;
-        double yTemp = y;
-
-        double theta = aAngle * M_PI / 180;
-        double c = cos(theta);
-        double s = sin(theta);
-
-        x = xTemp * c - yTemp * s;
-        y = xTemp * s + yTemp * c;
-
-        translate(geometric_center.x, geometric_center.y);
-    }
-
-    // NOTE: Rotates around origin (0,0).
-    void rotateCCW(float angle, Point geometric_center) {
-        translate(-geometric_center.x, -geometric_center.y);
-
-        double xTemp = x;
-        double yTemp = y;
-
-        double theta = angle * M_PI / 180;
-        double c = cos(theta);
-        double s = sin(theta);
-
-        x = xTemp * c + yTemp * s;
-        y = -xTemp * s + yTemp * c;
-
-        translate(geometric_center.x, geometric_center.y);
-    }
-};
+//struct Point {
+//    float x = 0;
+//    float y = 0;
+//    float xvel = 0;
+//    float yvel = 0;
+//
+//    bool rotatingCW = false;
+//    bool rotatingCCW = false;
+//
+//    Point(float aX = 0, float aY = 0) {
+//        x = aX;
+//        y = aY;
+//    }
+//
+//    void simulate(Point geometric_center) {
+//        x += xvel;
+//        y += yvel;
+//
+//        if (rotatingCW) {
+//            rotateCW(ROTATION_ANGLE, geometric_center);
+//        }
+//        else if (rotatingCCW) {
+//            rotateCCW(ROTATION_ANGLE, geometric_center);
+//        }
+//    }
+//
+//    void translate(float aX, float aY) {
+//        x += aX;
+//        y += aY;
+//    }
+//    
+//    // NOTE: Rotates around origin (0,0).
+//    void rotateCW(float aAngle, Point geometric_center) {
+//        translate(-geometric_center.x, -geometric_center.y);
+//
+//        double xTemp = x;
+//        double yTemp = y;
+//
+//        double theta = aAngle * M_PI / 180;
+//        double c = cos(theta);
+//        double s = sin(theta);
+//
+//        x = xTemp * c - yTemp * s;
+//        y = xTemp * s + yTemp * c;
+//
+//        translate(geometric_center.x, geometric_center.y);
+//    }
+//
+//    // NOTE: Rotates around origin (0,0).
+//    void rotateCCW(float angle, Point geometric_center) {
+//        translate(-geometric_center.x, -geometric_center.y);
+//
+//        double xTemp = x;
+//        double yTemp = y;
+//
+//        double theta = angle * M_PI / 180;
+//        double c = cos(theta);
+//        double s = sin(theta);
+//
+//        x = xTemp * c + yTemp * s;
+//        y = -xTemp * s + yTemp * c;
+//
+//        translate(geometric_center.x, geometric_center.y);
+//    }
+//};
 
 void handleInputs(std::vector<SDL_Keycode> keysDown, std::vector<SDL_Keycode> keysUp,
     Polygon* polygon) {
@@ -227,10 +227,12 @@ int gameLoop() {
 
     SDL_FPoint trianglePoints[3] = { {200, 200}, {270, 180}, {230, 120} };
     Polygon triangle = Polygon(trianglePoints, 3);
-    SDL_FPoint squarePoints[4] = { {300, 300}, {350, 300}, {350, 350}, {300, 350} };
+    //SDL_FPoint squarePoints[4] = { {300, 300}, {350, 300}, {350, 350}, {300, 350} };
+    SDL_FPoint squarePoints[4] = { {300, 300}, {300, 350}, {350, 350}, {350, 300} };
     Polygon square = Polygon(squarePoints, 4);
     SDL_FPoint pentaPoints[5] = {
-        {200, 200},{250, 250},{230, 300},{170, 300},{150, 250}
+        //{200, 200},{250, 250},{230, 300},{170, 300},{150, 250}
+        {200, 200},{150, 250},{170,300},{230, 300}, {250, 250}
     };
     Polygon penta = Polygon(pentaPoints, 5);
 
@@ -247,7 +249,7 @@ int gameLoop() {
     std::vector<SDL_Keycode> keysDown;
     std::vector<SDL_Keycode> keysUp;
 
-    //triangle.rotate(5); // weird fix: don't know what this is about
+    penta.rotate(1); // weird fix: don't know what this is about
 
     while (!quit) {
         frameStart = SDL_GetTicks();
@@ -281,7 +283,8 @@ int gameLoop() {
         keysUp.clear();
         lastPhysicsUpdate = SDL_GetTicks();
 
-        bool collision = SAT_collision(&square, &penta);
+        //bool collision = SAT_collision(&square, &penta);
+        bool collision = SAT_collision(&penta, &triangle);
         //printf("%s\n", collision ? "true" : "");
 
         // Rendering starts

@@ -75,10 +75,10 @@ void Polygon::simulate() {
 	}
 
 	if (rotatingCW) {
-		rotate(.25);
+		rotate(5);
 	}
 	else if (rotatingCCW) {
-		rotate(-.25);
+		rotate(-5);
 	}
 }
 
